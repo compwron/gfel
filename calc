@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+class Calculator
+  attr_reader :result
+  SYMBOLS = [:+, :-, :*, :/]
+
+  def initialize(args)
+    fix_star!(args)
+    original_args = args.join(' ')
+    @result = "#{original_args} = #{eval(parse(args))}"
+  end
+
+  private
+
+  def fix_star!(args)
+    args.collect! { |i| (i == 'calc') ? '*' : i }
+  end
+
+  def parse(args)
+    args.map {|a|
+      SYMBOLS.find{|s| s == a.to_sym} || integer(a)
+    }.compact
+  end
+
+  def integer(c)
+    char = c.strip
+    char_i = char.to_i
+    return char_i unless (char != '0' && char_i == 0)
+    nil
+  end
+
+  def eval(args)
+    to_eval = args.reverse
+    agg = 0
+    [].tap { |foo|
+      agg = to_eval.pop
+      while to_eval.size > 1
+        a = to_eval.pop
+        b = to_eval.pop
+        agg = agg.send(a, b)
+      end
+    }
+    agg
+  end
+end
+
+# Only run the following code when this file is the main file being run
+# instead of having been required or loaded by another file
+if __FILE__==$0
+  # Find the parent directory of this file and add it to the front
+  # of the list of locations to look in when using require
+  $:.unshift File.expand_path("../../", __FILE__)
+
+  puts Calculator.new(ARGV).result
+end
